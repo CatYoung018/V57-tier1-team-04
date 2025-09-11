@@ -190,7 +190,7 @@ const TeamInfo = () => {
   return (
     <div>
       <button className="button" onClick={handleClick}>Click to get PR information</button>
-      {/* Add the checkbox to toggle mock data */}
+      <button className="button" onClick={handleUpdateMockData}>Update Mock Data from Live</button>
       <div>
         <input
           type="checkbox"
