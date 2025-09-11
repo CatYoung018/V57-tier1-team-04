@@ -1,7 +1,7 @@
 import { Octokit } from 'octokit'
 import { useState } from 'react'
 import '../App.css'
-import mockData from './data/mock_data.json';
+import mockData from '../data/mock_data.json';
 
 const TeamInfo = () => {
   const [branches, setBranches] = useState('')
