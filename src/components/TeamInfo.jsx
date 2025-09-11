@@ -102,9 +102,32 @@ const TeamInfo = () => {
     setPRs(prItems)
   }
 
+  const handleUpdateMockData = async () => {
+    console.log ('Fetching live data to update mock data...')
+    try {
+      const teamData = await getTeam()
+      const repoData = await getTeamRepo()
+      const branchData = await getRepoBranches()
+      const prData = await getPullRequests()
+      
+      const allData = {
+        team: teamData,
+        repos: repoData,
+        branches: branchData,
+        pullRequests: prData
+      }
+
+      console.log('Fetched data:', allData)
+      console.log ('Copy the following JSON and paste it into mock_data.json file:');
+      console.log (JSON.stringify(allData, null, 2));
+    } catch (error) {
+      console.error('Error fetching live data:', error);
+    }
+  }
+    
   const getRepoBranches = async () => {
     const octokit = new Octokit({
-      auth: import.meta.env.VITE_GITHUB_TOKEN
+      auth: import.meta.env.VITE_GITHUB_TOKEN,
     })
     
     const repoBranches = await octokit.request('GET /repos/{owner}/{repo}/branches', {
