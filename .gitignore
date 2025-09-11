@@ -25,6 +25,4 @@ dist-ssr
 
 # .gitignore
 
-#dot.env
-.env
 
