@@ -1,14 +1,15 @@
 import { Octokit } from 'octokit'
 import { useState } from 'react'
 import '../App.css'
+import mockData from './data/mock_data.json';
 
 const TeamInfo = () => {
   const [branches, setBranches] = useState('')
   const [prs, setPRs] = useState('')
   const [repo, setRepo] = useState('')
   const [team, setTeam] = useState('')
+  const [useMockData, setUseMockData] = useState(false);
 
-  // Function to pretty-print JSON with colors and indentation
   const syntaxHighlight =(json) => {
     json = JSON.stringify(json, undefined, 4)
     json = json.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>')
@@ -29,49 +30,72 @@ const TeamInfo = () => {
     })
   }
 
+  // New mock data functions
+  const getMockTeam = () => {
+    return mockData.team;
+  };
+
+  const getMockTeamRepo = () => {
+    return mockData.repos;
+  };
+
+  const getMockRepoBranches = () => {
+    return mockData.branches;
+  };
+
+  const getMockPullRequests = () => {
+    return mockData.pullRequests;
+  };
+
+
   const handleClick = async (e) => {
     // Prevent the browser from reloading the page
     e.preventDefault()
 
-    // Retrieve team information
-    const teamData = await getTeam()
+    let teamData;
+    let repoData;
+    let branchData;
+    let prData;
+
+    if (useMockData) {
+      teamData = getMockTeam();
+      repoData = getMockTeamRepo();
+      branchData = getMockRepoBranches();
+      prData = getMockPullRequests();
+    } else {
+      teamData = await getTeam()
+      repoData = await getTeamRepo()
+      branchData = await getRepoBranches()
+      prData = await getPullRequests()
+    }
+
     const teamInfo = (
         <div className="border">
-          <p className="code-text justify-left">{syntaxHighlight(teamData)}</p> 
+          <p className="code-text justify-left">{syntaxHighlight(teamData)}</p>
         </div>
     )
     setTeam(teamInfo)
 
-    // Retrieve repo information
-    const repoData = await getTeamRepo()
     const repoInfo = (
         <div className="border">
-          <p className="code-text justify-left">{syntaxHighlight(repoData)}</p> 
+          <p className="code-text justify-left">{syntaxHighlight(repoData)}</p>
         </div>
     )
     setRepo(repoInfo)
 
-    // Retrieve branch information
-    const branchData = await getRepoBranches()
-    let itemNo = 0
-    const branchItems = branchData.data.map((entry) => {
-      itemNo++
+    const branchItems = branchData.data.map((entry, index) => {
       return (
-        <div className="border" key={itemNo}>
-          <p className="code-text justify-left">{syntaxHighlight(entry)}</p> 
+        <div className="border" key={index}>
+          <p className="code-text justify-left">{syntaxHighlight(entry)}</p>
         </div>
       )
     })
     setBranches(branchItems)
 
-    // Retrieve PR information
-    const prData = await getPullRequests()
-    itemNo = 0
-    const prItems = prData.data.map((entry) => {
-      itemNo++
+    const prItems = prData.data.map((entry, index) => {
       return (
-        <div className="border" key={itemNo}>
-          <p className="code-text justify-left">{syntaxHighlight(entry)}</p> 
+        <div className="border" key={index}>
+          <p className="code-text justify-left">{syntaxHighlight(entry)}</p>
         </div>
       )
     })
@@ -93,7 +117,6 @@ const TeamInfo = () => {
     return repoBranches
   }
 
-  // Retrieve the Pull Requests for a given repo
   const getPullRequests = async () => {
     const octokit = new Octokit({
       auth: import.meta.env.VITE_GITHUB_TOKEN
@@ -110,7 +133,6 @@ const TeamInfo = () => {
     return pullRequests
   }
 
-  // Get the team information
   const getTeam = async () => {
     const octokit = new Octokit({
       auth: import.meta.env.VITE_GITHUB_TOKEN
@@ -126,7 +148,6 @@ const TeamInfo = () => {
     return teamInfo
   }
 
-  // Get the team repository information
   const getTeamRepo = async () => {
     const octokit = new Octokit({
       auth: import.meta.env.VITE_GITHUB_TOKEN
@@ -146,6 +167,16 @@ const TeamInfo = () => {
   return (
     <div>
       <button className="button" onClick={handleClick}>Click to get PR information</button>
+      {/* Add the checkbox to toggle mock data */}
+      <div>
+        <input
+          type="checkbox"
+          id="mockDataCheckbox"
+          checked={useMockData}
+          onChange={() => setUseMockData(!useMockData)}
+        />
+        <label htmlFor="mockDataCheckbox">Use Mock PR Data</label>
+      </div>
       <h2>Team Info</h2>
       {team}
       <h2>Repo Info</h2>
@@ -158,4 +189,4 @@ const TeamInfo = () => {
   )
 }
 
-export default TeamInfo
+export default TeamInfo;
