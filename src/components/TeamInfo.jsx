@@ -1,15 +1,14 @@
 import { Octokit } from 'octokit'
 import { useState } from 'react'
 import '../App.css'
-import mockData from '../data/mock_data.json';
 
 const TeamInfo = () => {
   const [branches, setBranches] = useState('')
   const [prs, setPRs] = useState('')
   const [repo, setRepo] = useState('')
   const [team, setTeam] = useState('')
-  const [useMockData, setUseMockData] = useState(false);
 
+  // Function to pretty-print JSON with colors and indentation
   const syntaxHighlight =(json) => {
     json = JSON.stringify(json, undefined, 4)
     json = json.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>')
@@ -30,104 +29,58 @@ const TeamInfo = () => {
     })
   }
 
-  // New mock data functions
-  const getMockTeam = () => {
-    return mockData.team;
-  };
-
-  const getMockTeamRepo = () => {
-    return mockData.repos;
-  };
-
-  const getMockRepoBranches = () => {
-    return mockData.branches;
-  };
-
-  const getMockPullRequests = () => {
-    return mockData.pullRequests;
-  };
-
-
   const handleClick = async (e) => {
     // Prevent the browser from reloading the page
     e.preventDefault()
 
-    let teamData;
-    let repoData;
-    let branchData;
-    let prData;
-
-    if (useMockData) {
-      teamData = getMockTeam();
-      repoData = getMockTeamRepo();
-      branchData = getMockRepoBranches();
-      prData = getMockPullRequests();
-    } else {
-      teamData = await getTeam()
-      repoData = await getTeamRepo()
-      branchData = await getRepoBranches()
-      prData = await getPullRequests()
-    }
-
+    // Retrieve team information
+    const teamData = await getTeam()
     const teamInfo = (
         <div className="border">
-          <p className="code-text justify-left">{syntaxHighlight(teamData)}</p>
+          <p className="code-text justify-left">{syntaxHighlight(teamData)}</p> 
         </div>
     )
     setTeam(teamInfo)
 
+    // Retrieve repo information
+    const repoData = await getTeamRepo()
     const repoInfo = (
         <div className="border">
-          <p className="code-text justify-left">{syntaxHighlight(repoData)}</p>
+          <p className="code-text justify-left">{syntaxHighlight(repoData)}</p> 
         </div>
     )
     setRepo(repoInfo)
 
-    const branchItems = branchData.data.map((entry, index) => {
+    // Retrieve branch information
+    const branchData = await getRepoBranches()
+    let itemNo = 0
+    const branchItems = branchData.data.map((entry) => {
+      itemNo++
       return (
-        <div className="border" key={index}>
-          <p className="code-text justify-left">{syntaxHighlight(entry)}</p>
+        <div className="border" key={itemNo}>
+          <p className="code-text justify-left">{syntaxHighlight(entry)}</p> 
         </div>
       )
     })
     setBranches(branchItems)
 
-    const prItems = prData.data.map((entry, index) => {
+    // Retrieve PR information
+    const prData = await getPullRequests()
+    itemNo = 0
+    const prItems = prData.data.map((entry) => {
+      itemNo++
       return (
-        <div className="border" key={index}>
-          <p className="code-text justify-left">{syntaxHighlight(entry)}</p>
+        <div className="border" key={itemNo}>
+          <p className="code-text justify-left">{syntaxHighlight(entry)}</p> 
         </div>
       )
     })
     setPRs(prItems)
   }
 
-  const handleUpdateMockData = async () => {
-    console.log ('Fetching live data to update mock data...')
-    try {
-      const teamData = await getTeam()
-      const repoData = await getTeamRepo()
-      const branchData = await getRepoBranches()
-      const prData = await getPullRequests()
-      
-      const allData = {
-        team: teamData,
-        repos: repoData,
-        branches: branchData,
-        pullRequests: prData
-      }
-
-      console.log('Fetched data:', allData)
-      console.log ('Copy the following JSON and paste it into mock_data.json file:');
-      console.log (JSON.stringify(allData, null, 2));
-    } catch (error) {
-      console.error('Error fetching live data:', error);
-    }
-  }
-    
   const getRepoBranches = async () => {
     const octokit = new Octokit({
-      auth: import.meta.env.VITE_GITHUB_TOKEN,
+      auth: import.meta.env.VITE_GITHUB_TOKEN
     })
     
     const repoBranches = await octokit.request('GET /repos/{owner}/{repo}/branches', {
@@ -140,6 +93,7 @@ const TeamInfo = () => {
     return repoBranches
   }
 
+  // Retrieve the Pull Requests for a given repo
   const getPullRequests = async () => {
     const octokit = new Octokit({
       auth: import.meta.env.VITE_GITHUB_TOKEN
@@ -156,6 +110,7 @@ const TeamInfo = () => {
     return pullRequests
   }
 
+  // Get the team information
   const getTeam = async () => {
     const octokit = new Octokit({
       auth: import.meta.env.VITE_GITHUB_TOKEN
@@ -171,6 +126,7 @@ const TeamInfo = () => {
     return teamInfo
   }
 
+  // Get the team repository information
   const getTeamRepo = async () => {
     const octokit = new Octokit({
       auth: import.meta.env.VITE_GITHUB_TOKEN
@@ -190,16 +146,6 @@ const TeamInfo = () => {
   return (
     <div>
       <button className="button" onClick={handleClick}>Click to get PR information</button>
-      <button className="button" onClick={handleUpdateMockData}>Update Mock Data from Live</button>
-      <div>
-        <input
-          type="checkbox"
-          id="mockDataCheckbox"
-          checked={useMockData}
-          onChange={() => setUseMockData(!useMockData)}
-        />
-        <label htmlFor="mockDataCheckbox">Use Mock PR Data</label>
-      </div>
       <h2>Team Info</h2>
       {team}
       <h2>Repo Info</h2>
@@ -212,4 +158,4 @@ const TeamInfo = () => {
   )
 }
 
-export default TeamInfo;
+export default TeamInfo
