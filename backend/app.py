@@ -8,7 +8,7 @@ import requests
 load_dotenv()
 
 app = Flask (__name__)
-app.secret_key = os.urandom(24)
+app.secret_key = os.getenv('SECRET_KEY')
 CORS(app, supports_credentials=True, origins=['http://localhost:5173'])
 
 app.config['SESSION_TYPE'] = 'filesystem'
@@ -49,7 +49,7 @@ def callback():
     token_response = requests.post(
         'https://github.com/login/oauth/access_token',
         json={
-            'client_ide': GITHUB_CLIENT_ID,
+            'client_id': GITHUB_CLIENT_ID,
             'client_secret': GITHUB_CLIENT_SECRET,
             'code': code
         },
@@ -59,12 +59,20 @@ def callback():
     token_data = token_response.json()
     access_token = token_data.get('access_token')
 
+    if not access_token:
+        return redirect('http://localhost:5173?error=auth_failed')
+
     user_response = requests.get(
         'https://api.github.com/user',
         headers={'Authorization': f'token {access_token}'}
     )
 
-    session['user'] = user_response.json()
+    user_data = user_response.json()
+
+    if 'login' not in user_data:
+        return redirect('http://localhost:5173?error=auth_failed')
+
+    session['user'] = user_data
     session['access_token'] = access_token
 
     return redirect('http://localhost:5173')
@@ -82,4 +90,4 @@ def logout():
     return jsonify({'status': 'logged out'})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='localhost', port=5001)
