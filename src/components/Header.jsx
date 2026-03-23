@@ -50,10 +50,10 @@ function Header() {
               style={{ width: '32px', borderRadius: '50%' }}
               />
               <span>{user.login}</span>
-              <button onClick={handleLogout}>Logout</button>
+              <button onClick={handleLogout} className="border border-[#4a9ebb] text-[#4a9ebb] px-4 py-2 rounded-md text-sm cursor-pointer">Logout</button>
             </div>
           ) : (
-            <button onClick={handleLogin}>Login with GitHub</button>
+            <button onClick={handleLogin} className="bg-[#4a9ebb] text-white px-4 py-2 rounded-md text-sm cursor-pointer">Login with GitHub</button>
           )}
         </div>
     </header>
