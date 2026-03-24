@@ -10,7 +10,7 @@ const PrList = ({ state = "open", onDataFetched, search }) => {
     try {
       setError(null);
 
-      const response = await fetch('http://127.0.0.1:5000/api/pulls', {
+      const response = await fetch('http://127.0.0.1:5001/api/pulls', {
         credentials: 'include'
       });
       
