@@ -133,4 +133,4 @@ def get_contributors():
     return jsonify(response.json())
 
 if __name__ == '__main__':
-    app.run(debug=True, host='localhost', port=5001)
+    app.run(debug=False)
