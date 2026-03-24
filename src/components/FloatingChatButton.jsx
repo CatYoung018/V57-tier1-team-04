@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 
-// --- CHATBOX COMPONENT ---
-// This component contains the actual chat interface UI
+// ---- CHATBOX COMPONENT ----
 const SimpleChatbox = ({ onClose }) => {
   const [messages, setMessages] = useState([
-    { id: 1, text: "Hello! I'm your AI assistant. How can I help you today?", sender: 'bot' },
+    { id: 1, text: "Hi! I'm your PR Dashboard assistant. Ask me anything about pull requests or how to use this app!", sender: 'bot' },
   ]);
   const [input, setInput] = useState('');
 
@@ -12,44 +11,56 @@ const SimpleChatbox = ({ onClose }) => {
     e.preventDefault();
     if (input.trim() === '') return;
 
-    // 1. Add user message
     const newUserMessage = { id: Date.now(), text: input, sender: 'user' };
     setMessages((prev) => [...prev, newUserMessage]);
     setInput('');
 
-    // 2. Simulate AI response after a short delay
-    setTimeout(() => {
-      const botResponse = { id: Date.now() + 1, text: `I received your message: "${input}". How else can I assist?`, sender: 'bot' };
-      setMessages((prev) => [...prev, botResponse]);
-    }, 1000);
+    fetch('http://localhost:5001/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ message: input })
+    })
+      .then(res => res.json())
+      .then(data => {
+        const botResponse = { id: Date.now() + 1, text: data.reply, sender: 'bot' };
+        setMessages(prev => [...prev, botResponse]);
+      })
+      .catch(err => console.error(err));
   };
+
+  const suggestedQuestions = [
+    "What is a pull request?",
+    "How do I filter PRs?",
+    "What's the difference between Open and Closed PRs?",
+    "How do I use this dashboard?"
+  ];
 
   return (
     <div className="chatbox-container flex flex-col h-full bg-gray-50 rounded-lg">
-      
       {/* Chat Header */}
       <div className="flex items-center justify-between p-4 bg-[#60B8DE] text-white rounded-t-lg shadow-md">
         <h2 className="text-lg font-semibold">AI Support Chat</h2>
-        <button 
-          onClick={onClose} 
+        <button
+          onClick={onClose}
           className="text-white hover:text-gray-200 transition"
           aria-label="Close Chat"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
         </button>
       </div>
 
       {/* Messages Area */}
       <div className="flex-grow p-4 space-y-3 overflow-y-auto custom-scrollbar">
         {messages.map((msg) => (
-          <div 
-            key={msg.id} 
+          <div
+            key={msg.id}
             className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
           >
-            <div 
+            <div
               className={`chatbox-message max-w-[75%] px-4 py-2 rounded-xl text-sm shadow-md ${
-                msg.sender === 'user' 
-                  ? 'bg-[#60B8DE] text-white rounded-br-none' 
+                msg.sender === 'user'
+                  ? 'bg-[#60B8DE] text-white rounded-br-none'
                   : 'bg-white text-gray-800 rounded-tl-none border border-gray-200'
               }`}
             >
@@ -57,6 +68,21 @@ const SimpleChatbox = ({ onClose }) => {
             </div>
           </div>
         ))}
+
+        {/* Suggested Questions */}
+        {messages.length === 1 && (
+          <div className="px-4 pb-2 flex flex-wrap gap-2">
+            {suggestedQuestions.map((q) => (
+              <button
+                key={q}
+                onClick={() => setInput(q)}
+                className="text-xs bg-white border border-[#60B8DE] text-[#1a6e8a] px-3 py-1 rounded-full hover:bg-[#60B8DE] hover:text-white transition"
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Message Input */}
@@ -74,15 +100,15 @@ const SimpleChatbox = ({ onClose }) => {
             className="bg-[#60B8DE] text-white p-3 rounded-lg hover:bg-[#60B8DE] transition duration-200"
             aria-label="Send Message"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h14M12 5l7 7-7 7" /></svg>
           </button>
         </div>
       </form>
     </div>
   );
 };
-// --- END CHATBOX COMPONENT ---
 
+// ---- END CHATBOX COMPONENT ----
 
 // --- FLOATING BUTTON COMPONENT ---
 const FloatingChatButton = () => {

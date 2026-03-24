@@ -2,6 +2,7 @@ from flask import Flask, jsonify, redirect, request, session
 from flask_cors import CORS
 from flask_session import Session
 from dotenv import load_dotenv
+from google import genai
 import os
 import requests
 
@@ -88,6 +89,32 @@ def get_user():
 def logout():
     session.clear()
     return jsonify({'status': 'logged out'})
+
+@app.route('/api/chat', methods=['POST'])
+def chat():
+    data = request.get_json()
+    user_message = data.get('message', '')
+
+    client = genai.Client (api_key=os.getenv('GEMINI_API_KEY'))
+    response = client.models.generate_content(
+        model='gemini-2.5-flash',
+        contents=f"""You are a helpful AI assistant built into the Pull Request Dashboard app. 
+This app helps software teams track pull requests from a GitHub repository.
+It has these pages:
+- Home: welcome page with app overview
+- Open PRs: shows all currently open pull requests
+- Closed PRs: shows merged or rejected pull requests
+- Contributors: shows team members who have submitted PRs
+- About Us: info about the team
+
+You can help users understand how to use the dashboard, explain pull request concepts, 
+and guide them to the right page for what they need.
+You cannot access live data directly, but you can explain how to find it in the app.
+
+User asked: {user_message}"""
+    )
+
+    return jsonify({'reply': response.text})
 
 if __name__ == '__main__':
     app.run(debug=True, host='localhost', port=5001)
