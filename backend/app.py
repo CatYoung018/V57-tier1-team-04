@@ -116,5 +116,21 @@ User asked: {user_message}"""
 
     return jsonify({'reply': response.text})
 
+@app.route('/api/contributors')
+def get_contributors():
+    token = os.getenv('GITHUB_TOKEN')
+    org = os.getenv('GITHUB_ORG')
+    repo = os.getenv('GITHUB_REPO_NAME')
+
+    headers = {
+        'Authorization': f'token {token}',
+        'X-GitHub-Api-Version': '2022-11-28'
+    }
+
+    url = f'https://api.github.com/repos/{org}/{repo}/contributors'
+    response = requests.get(url, headers=headers)
+
+    return jsonify(response.json())
+
 if __name__ == '__main__':
     app.run(debug=True, host='localhost', port=5001)
