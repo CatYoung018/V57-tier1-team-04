@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 
 // ---- CHATBOX COMPONENT ----
 const SimpleChatbox = ({ onClose }) => {
@@ -64,7 +65,7 @@ const SimpleChatbox = ({ onClose }) => {
                   : 'bg-white text-gray-800 rounded-tl-none border border-gray-200'
               }`}
             >
-              {msg.text}
+              <ReactMarkdown>{msg.text}</ReactMarkdown>
             </div>
           </div>
         ))}
